@@ -281,12 +281,16 @@ install_binary() {
     echo_and_log "INFO" "Extracting $filename..."
     tar -xzf "$filename"
 
+    
     local binary_name="aios-cli"
-    local binary_path=$(find . -name "$binary_name" -type f)
-    if [ -z "$binary_path" ]; then
+
+    
+    local binary_path="./$binary_name"
+    if [ ! -f "$binary_path" ]; then
         echo_and_log "ERROR" "Binary not found in the extracted files."
         return 1
     fi
+
 
     echo_and_log "WARN" "Moving binary to $install_dir"
     if mv "$binary_path" "$install_dir/$binary_name"; then
