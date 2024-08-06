@@ -303,15 +303,21 @@ install_binary() {
     local shell_rc=$(get_shell_rc)
     log "INFO" "Detected shell's rc file: $shell_rc"
 
-    if [[ $shell_rc == "unknown" ]]; then
-        echo_and_log "ERROR" "Couldn't detect your shell's rc file manually add this line to get it working:\n"
-        echo "\nexport AIOS_HOME=$install_dir\nexport PATH=\"\$AIOS_HOME:\$PATH\""
-        return 1
+    if [[ -n "$AIOS_HOME" && "$PATH" == *"$AIOS_HOME"* ]]; then
+        echo_and_log "INFO" "PATHs already set. Skipping..."
     else
-        echo -e "\nexport AIOS_HOME=$install_dir\nexport PATH=\"\$AIOS_HOME:\$PATH\"" >> $shell_rc
-        echo_and_log "INFO" "Binary added to path in your shells config at $shell_rc"
-        echo_and_log "INFO" "To run $binary_name restart your shell or run \`source $shell_rc\`"
+        if [[ $shell_rc == "unknown" ]]; then
+            echo_and_log "ERROR" "Couldn't detect your shell's rc file manually add this line to get it working:\n"
+            echo "\nexport AIOS_HOME=$install_dir\nexport PATH=\"\$AIOS_HOME:\$PATH\""
+            return 1
+        else
+            echo -e "\nexport AIOS_HOME=$install_dir\nexport PATH=\"\$AIOS_HOME:\$PATH\"" >> $shell_rc
+            echo_and_log "INFO" "Binary added to path in your shells config at $shell_rc"
+            echo_and_log "INFO" "To run $binary_name restart your shell or run \`source $shell_rc\`"
+        fi
     fi
+
+
 
     # Clean up
     rm -f "$filename"
