@@ -171,8 +171,14 @@ Subcommands:
 - `disconnect`: Disconnect from the network.
 - `infer`: Run an inference on the network.
 - `listen`: Listen for all hive events.
+- `select-tier`: Select a tier to start recieving points
+- `allocate`: Allocate the amount of GPU memory you would like to and get automatically put into the best tier for points
 - `interrupt`: Interrupt an inference you are currently doing for the network.
 - `help`: Print the help message for the hive command or its subcommands.
+
+Options:
+
+- `--verbose`: you can run all the commands with this flag to get more info about any errors
 
 ### `version`
 
@@ -187,6 +193,34 @@ Prints the help message or the help of the given subcommand(s).
 Usage:
 - `aios-cli help`: Prints general help
 - `aios-cli help [COMMAND]`: Prints help for a specific command
+
+## Points
+
+To get points you need to put into a tier (currently ranging from best to worst as 1-5).
+
+Each tier has some required models that you need to download and register to the network and certain amounts of GPU memory:
+
+- `1` : `30GB`
+- `2` : `20GB`
+- `3` : `8GB`
+- `4` : `4GB`
+- `5` : `2GB`
+
+You can see what models you need by attempting to `hive select-tier` or by running `hive allocate` with the amount of VRAM you want to provide.
+
+Here's a full workflow of using the CLI to start receiving points:
+
+```shell
+# Run this to see what models are required
+aios-cli hive select-tier 5
+# Download a required model
+aios-cli models add hf:TheBloke/phi-2-GGUF:phi-2.Q4_K_M.gguf
+# Make sure it's registered
+aios-cli hive connect
+aios-cli hive select-tier 5
+# To check your current multiplier and points
+aios-cli hive points
+```
 
 ## Updates
 
