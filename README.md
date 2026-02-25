@@ -1,7 +1,7 @@
 <h1 align="center">Hyperspace CLI</h1>
 
 <p align="center">
-  The command-line client for the <a href="https://hyper.space">Hyperspace</a> decentralized P2P AI inference network.
+  The command-line agent for the <a href="https://hyper.space">Hyperspace</a> decentralized P2P AI inference network.
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@
 
 ---
 
-**Hyperspace CLI** (`hyperspace`) is the primary way to run a node on the Hyperspace network -- a fully decentralized peer-to-peer AI inference network with over 2 million nodes worldwide. Run local AI models, earn points, and contribute compute to the network.
+**Hyperspace CLI** (`hyperspace`) is the primary way to run an agent on the Hyperspace network -- a fully decentralized peer-to-peer AI inference network with over 2 million agents worldwide. Run local AI models, earn points, and contribute compute to the network.
 
 > This is a **release-only repository**. Binary releases are published here for direct download and auto-update. The source code lives in a private monorepo.
 
@@ -27,7 +27,7 @@
 
 - [Install](#install)
 - [Quick Start](#quick-start)
-- [Commands](#commands)
+- [Command Reference](#command-reference)
 - [Features](#features)
 - [Platform Support](#platform-support)
 - [GPU Recommendations](#gpu-recommendations)
@@ -36,7 +36,6 @@
 - [Troubleshooting](#troubleshooting)
 - [Uninstall](#uninstall)
 - [Links](#links)
-- [Maintainer](#maintainer)
 - [License](#license)
 
 ## Install
@@ -62,51 +61,134 @@ curl https://download.hyper.space/api/install?platform=windows | powershell -
 - Auto-detects and integrates with existing [Ollama](https://ollama.com) installations
 - On desktop machines, installs the **Hyperspace Tray app** (use `--no-tray` to skip)
 
-The binary is named `hyperspace`. The legacy name `aios-cli` is kept as an alias for backwards compatibility.
+The binary is named `hyperspace`. The legacy name `aios-cli` is kept as an alias for backward compatibility.
 
 ## Quick Start
 
 ```bash
-# Start your node (auto-detects hardware and selects the best profile)
+# Start your agent (auto-detects hardware and selects the best profile)
 hyperspace start
 
 # Or start with all 9 capabilities enabled
 hyperspace start --profile full
 
-# Start with the management API exposed on a specific port
+# Start with the management API on a specific port
 hyperspace start --api-port 8080
 
 # Auto-download the best models for your GPU
 hyperspace models pull --auto
 
-# Check your node status, peer count, and points
+# Check your agent status, peer count, and points
 hyperspace status
 ```
 
-## Commands
+## Command Reference
+
+### Core Commands
 
 | Command | Description |
-|---|---|
-| `hyperspace start` | Start the node daemon (background mode, survives terminal close) |
-| `hyperspace stop` | Stop the running node |
-| `hyperspace status` | Show node status, peer count, points balance, and tier |
-| `hyperspace models pull --auto` | Auto-download optimal models based on available VRAM |
-| `hyperspace models downloaded` | List all locally downloaded models |
-| `hyperspace models delete <name>` | Delete a downloaded model |
-| `hyperspace chat` | Interactive AI chat session using local inference |
-| `hyperspace version` | Show the installed version and check for updates |
+|---------|-------------|
+| `hyperspace start` | Start the agent daemon |
+| `hyperspace status` | Show agent status, peers, tier, points, uptime |
+| `hyperspace kill` | Stop the running agent (`-f` to force) |
+| `hyperspace chat` | Interactive conversational agent mode |
+| `hyperspace system-info` | Display system specs, GPU, VRAM, recommended tier |
+| `hyperspace version` | Show version (`--check-update` to check for new) |
+| `hyperspace update` | Check for and install updates (`--check` for dry run) |
 
-### Node Profiles
-
-When starting a node, you can specify a profile that determines which capabilities are active:
+### Start Options
 
 ```bash
-hyperspace start                     # Auto-detect best profile
-hyperspace start --profile full      # All capabilities
-hyperspace start --profile inference # GPU inference only
-hyperspace start --profile embedding # CPU-only embedding node
-hyperspace start --profile relay     # Lightweight relay node
+hyperspace start                          # Auto-detect everything
+hyperspace start --profile full           # All 9 capabilities
+hyperspace start --profile inference      # GPU inference only
+hyperspace start --profile embedding      # CPU-only embedding agent
+hyperspace start --profile relay          # Lightweight relay agent
+hyperspace start --profile storage        # Storage + memory
+hyperspace start --api-port 8080          # Management API port
+hyperspace start --cuda                   # Force CUDA acceleration
+hyperspace start --verbose                # Verbose logging
+hyperspace start --no-api                 # Disable management API
 ```
+
+### Model Management
+
+| Command | Description |
+|---------|-------------|
+| `hyperspace models list` | Show all models in the catalog |
+| `hyperspace models available` | List models compatible with your VRAM |
+| `hyperspace models pull --auto` | Auto-download best models for your GPU |
+| `hyperspace models pull <model-id>` | Download a specific GGUF model |
+| `hyperspace models downloaded` | List locally downloaded models |
+| `hyperspace models delete <model-id>` | Delete a downloaded model |
+| `hyperspace models add <model-id>` | Register a model on the network |
+| `hyperspace models remove <model-id>` | Unregister a model |
+| `hyperspace models check` | Check loaded models and network status |
+
+### Inference
+
+```bash
+hyperspace infer --prompt "Explain quantum computing" --p2p   # P2P network inference
+hyperspace infer --prompt "Hello" --local                      # Local inference
+hyperspace infer --model <model-id> --prompt "Hello"           # Specific model
+hyperspace infer --interactive                                 # Interactive chat
+hyperspace chat                                                # Agent chat mode
+```
+
+### Wallet and Staking
+
+| Command | Description |
+|---------|-------------|
+| `hyperspace wallet show` | Display address, balance, points, USDC equivalent |
+| `hyperspace wallet export` | Export address (machine-readable, for scripting) |
+| `hyperspace wallet costs` | Show task cost estimates per capability |
+| `hyperspace wallet settle` | Trigger manual USDC settlement check |
+| `hyperspace wallet staking` | Show staking status, delegations, rewards |
+| `hyperspace wallet stake <amount>` | Stake points |
+| `hyperspace wallet unstake <amount>` | Begin unstaking |
+| `hyperspace wallet claim-rewards` | Claim accumulated staking rewards |
+| `hyperspace wallet delegate <amount> <peer-id>` | Delegate to a validator |
+| `hyperspace wallet revoke <delegation-id>` | Revoke a delegation |
+
+### Identity
+
+| Command | Description |
+|---------|-------------|
+| `hyperspace identity export` | Export private key, public key, peer ID |
+| `hyperspace identity export --json` | Export as JSON |
+| `hyperspace identity export -o key.json` | Export to file |
+
+### Network (Hive)
+
+| Command | Description |
+|---------|-------------|
+| `hyperspace hive connect` | Connect to network (alias for `start`) |
+| `hyperspace hive disconnect` | Disconnect (alias for `kill`) |
+| `hyperspace hive whoami` | Display agent identity |
+| `hyperspace hive points` | Show accumulated points |
+| `hyperspace hive select-tier --auto` | Auto-detect tier from GPU |
+| `hyperspace hive allocate --mode power` | Set allocation mode (power / chill) |
+| `hyperspace hive listen` | Stream live network events |
+| `hyperspace hive login -k <base58>` | Authenticate with Ed25519 key |
+| `hyperspace hive import-keys <path>` | Import keys from file |
+
+### Proxy
+
+| Command | Description |
+|---------|-------------|
+| `hyperspace proxy status` | Show proxy service status and bandwidth |
+| `hyperspace proxy test [url]` | Test-fetch a URL through a proxy peer |
+| `hyperspace proxy info` | Show proxy capability details |
+
+### System
+
+| Command | Description |
+|---------|-------------|
+| `hyperspace install-service` | Register as OS service (auto-start on boot) |
+| `hyperspace uninstall-service` | Remove OS service registration |
+| `hyperspace migrate` | Migrate from v1 (`--dry-run` to preview) |
+| `hyperspace login` | Log in via browser OAuth (for Thor analysis) |
+| `hyperspace logout` | Log out |
 
 ## Features
 
@@ -121,10 +203,10 @@ hyperspace start --profile relay     # Lightweight relay node
 
 ### Network Capabilities
 
-Each node can provide up to 9 distinct capabilities to the network:
+Each agent provides up to 9 capabilities:
 
 | Capability | Description |
-|---|---|
+|------------|-------------|
 | **Inference** | Serve AI model inference requests from peers |
 | **Embedding** | Generate text embeddings (CPU-only, runs on any hardware) |
 | **Storage** | Distributed content-addressed block storage |
@@ -137,10 +219,8 @@ Each node can provide up to 9 distinct capabilities to the network:
 
 ## Platform Support
 
-Pre-built binaries are available for the following platforms:
-
 | Platform | Binary | Architecture |
-|---|---|---|
+|----------|--------|-------------|
 | macOS | `aios-cli-aarch64-apple-darwin.tar.gz` | Apple Silicon (ARM64) |
 | macOS | `aios-cli-x86_64-apple-darwin.tar.gz` | Intel (x86_64) |
 | Linux | `aios-cli-x86_64-unknown-linux-gnu.tar.gz` | x86_64 |
@@ -148,90 +228,80 @@ Pre-built binaries are available for the following platforms:
 | Windows | `aios-cli-x86_64-pc-windows-msvc.zip` | x86_64 |
 | Windows | `aios-cli-x86_64-pc-windows-msvc-cuda.zip` | x86_64 with CUDA |
 
-The CUDA variants include GPU acceleration support for NVIDIA GPUs. On macOS, Metal acceleration for Apple Silicon is included in the standard binary.
+The CUDA variants include GPU acceleration for NVIDIA GPUs. On macOS, Metal acceleration for Apple Silicon is included in the standard binary.
 
 ## GPU Recommendations
 
-The CLI automatically selects the best model for your hardware. Here is a general guide:
-
 | GPU | VRAM | Recommended Model | Best For |
-|---|---|---|---|
-| GTX 1650 | 4 GB | Gemma 3 1B | General tasks |
-| RTX 3060 / RTX 4060 | 8 GB | Gemma 3 4B | General tasks |
+|-----|------|-------------------|----------|
+| GTX 1650 | 4 GB | Gemma 3 1B | General |
+| RTX 3060 / RTX 4060 | 8 GB | Gemma 3 4B | General |
 | RTX 4070 | 12 GB | GLM-4 9B | Multilingual |
 | RTX 4080 | 16 GB | GPT-oss 20B | Reasoning |
-| RTX 4090 / RTX 3090 | 24 GB | Gemma 3 27B | General tasks |
-| A100 / H100 | 40-80 GB | Qwen2.5 Coder 32B | Code generation |
+| RTX 4090 / RTX 3090 | 24 GB | Gemma 3 27B | General |
+| A100 / H100 | 40-80 GB | Qwen2.5 Coder 32B | Code |
 
-CPU-only nodes can still contribute by running embedding models (all-MiniLM-L6-v2) and acting as relay or storage nodes.
+CPU-only agents can still contribute by running embedding models and acting as relay or storage agents.
 
 ## Configuration
 
-All data is stored under the `~/.hyperspace/` directory:
+All data is stored under `~/.hyperspace/`:
 
 | Path | Description |
-|---|---|
+|------|-------------|
 | `~/.hyperspace/bin/` | Installed binaries |
-| `~/.hyperspace/config.json` | Node configuration |
+| `~/.hyperspace/config.json` | Agent configuration |
 | `~/.hyperspace/logs/` | Log files |
 | `~/.hyperspace/models/` | Downloaded AI models |
-| `~/.hyperspace/identity/` | Persistent peer identity (Ed25519 keypair) |
+| `~/.hyperspace/identity.json` | Persistent Ed25519 keypair and peer ID |
+| `~/.hyperspace/status.json` | Points and status data |
+| `~/.hyperspace/install-method` | Install source marker (analytics) |
 
 On Windows, the equivalent base path is `%LOCALAPPDATA%\Hyperspace\`.
 
 ## Migrating from v1
 
-If you are running the v1 CLI (`aios-cli`), the upgrade is automatic. Key changes:
-
 | v1 Command | v2 Equivalent |
-|---|---|
+|------------|---------------|
 | `aios-cli hive connect` | `hyperspace start` |
-| `aios-cli hive select-tier` | Automatic (based on hardware) |
+| `aios-cli hive select-tier` | Automatic (hardware detection) |
 | `aios-cli hive points` | `hyperspace status` |
 
 - The binary auto-updates from v1 to v2 on next launch.
-- Your v1 points are **frozen and preserved** -- they will not be lost.
+- Your v1 points are **frozen and preserved**.
 - The `aios-cli` command name continues to work as an alias.
-- V2 replaces manual tier selection with automatic hardware detection and profile assignment.
+- V2 replaces manual tier selection with automatic hardware detection.
 
 ## Troubleshooting
 
-### Node not starting
+### Agent not starting
 
-1. Check the logs for errors:
-   ```bash
-   # Linux / macOS
-   cat ~/.hyperspace/logs/hyperspace.log
+```bash
+# Check logs
+cat ~/.hyperspace/logs/hyperspace.log
 
-   # Windows
-   type %LOCALAPPDATA%\Hyperspace\logs\hyperspace.log
-   ```
+# Ensure no other instance running
+hyperspace status
 
-2. Ensure no other instance is already running:
-   ```bash
-   hyperspace status
-   ```
-
-3. If the port is in use, specify a different API port:
-   ```bash
-   hyperspace start --api-port 9090
-   ```
+# Try different API port
+hyperspace start --api-port 9090
+```
 
 ### No GPU detected
 
-- **NVIDIA**: Ensure CUDA drivers are installed and `nvidia-smi` works. Use the `-cuda` binary variant.
-- **Apple Silicon**: Metal support is built-in. Ensure you are using the `aarch64-apple-darwin` binary.
-- **CPU-only**: The node will fall back to CPU inference with smaller models and can still earn points via relay, embedding, and validation.
+- **NVIDIA**: Ensure CUDA drivers are installed and `nvidia-smi` works.
+- **Apple Silicon**: Metal support is built-in with the `aarch64-apple-darwin` binary.
+- **CPU-only**: Falls back to CPU inference with smaller models. Use `--profile embedding`.
 
 ### Models not downloading
 
 - Check available disk space (models range from 1-20 GB).
-- Downloads support resume -- if interrupted, re-run `hyperspace models pull --auto` to continue.
+- Downloads support resume -- re-run `hyperspace models pull --auto` to continue.
 
 ### Connection issues
 
-- The node needs outbound internet access on TCP port 4002 (WebSocket) for P2P connections.
-- Nodes behind NAT are supported via circuit relay -- no port forwarding required.
+- Outbound internet access on TCP port 4002 (WebSocket) required.
+- Agents behind NAT are supported via circuit relay -- no port forwarding needed.
 
 ## Uninstall
 
@@ -247,7 +317,7 @@ curl https://download.hyper.space/api/uninstall | bash
 (Invoke-WebRequest "https://download.hyper.space/uninstall?platform=windows").Content | powershell -
 ```
 
-This removes the binary, tray app, and configuration. Downloaded models in `~/.hyperspace/models/` are preserved by default.
+Removes the binary, tray app, and configuration. Downloaded models in `~/.hyperspace/models/` are preserved by default.
 
 ## Links
 
@@ -258,8 +328,6 @@ This removes the binary, tray app, and configuration. Downloaded models in `~/.h
 ## Maintainer
 
 Varun ([@twobitapps](https://github.com/twobitapps))
-
-For project updates, follow [@HyperspaceAI](https://x.com/HyperspaceAI) on X.
 
 ## License
 
