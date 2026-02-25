@@ -1,241 +1,266 @@
-# aiOS CLI
+<h1 align="center">Hyperspace CLI</h1>
 
-## Overview
+<p align="center">
+  The command-line client for the <a href="https://hyper.space">Hyperspace</a> decentralized P2P AI inference network.
+</p>
 
-`aios-cli` is a command-line interface to access similar functionalities as the [aiOS desktop app](https://aios.network/). The CLI is a nicer UX if you're a developer and tend to stay in the terminal or would like to run a node on servers as this does not require a desktop environment to run.
+<p align="center">
+  <a href="https://github.com/hyperspaceai/aios-cli/stargazers"><img src="https://img.shields.io/github/stars/hyperspaceai/aios-cli?style=flat-square&color=yellow" alt="GitHub Stars" /></a>
+  <a href="https://github.com/hyperspaceai/aios-cli/releases/latest"><img src="https://img.shields.io/github/v/release/hyperspaceai/aios-cli?style=flat-square&color=blue" alt="Latest Release" /></a>
+  <a href="https://github.com/hyperspaceai/aios-cli/releases"><img src="https://img.shields.io/github/downloads/hyperspaceai/aios-cli/total?style=flat-square&color=green" alt="Total Downloads" /></a>
+  <a href="https://github.com/hyperspaceai/aios-cli/blob/main/LICENSE"><img src="https://img.shields.io/github/license/hyperspaceai/aios-cli?style=flat-square" alt="License" /></a>
+</p>
 
-The CLI has a lot of commands, but the basic idea is that it allows you to run your local models (for personal inferences), host your downloaded models to provide inference to the network and earn points, and to use models other people are hosting for personal inference.
+<p align="center">
+  <a href="https://hyper.space">Website</a> |
+  <a href="https://p2p.hyper.space">Dashboard</a> |
+  <a href="https://x.com/HyperspaceAI">Twitter/X</a>
+</p>
 
-## Installation
+---
 
-To install on all platforms you can use our install script (located here in the repo or) available hosted on our download endpoint. These scripts will download the latest release, install any required GPU drivers, and move the binary to somewhere in  your `PATH` so that you can access `aios-cli` globally. You can learn more about how the script works [here](/scripts/README.md).
+**Hyperspace CLI** (`hyperspace`) is the primary way to run a node on the Hyperspace network -- a fully decentralized peer-to-peer AI inference network with over 2 million nodes worldwide. Run local AI models, earn points, and contribute compute to the network.
 
-While the script is the recommended way to install, you can also download the binaries directly from the releases section of this repository.
+> This is a **release-only repository**. Binary releases are published here for direct download and auto-update. The source code lives in a private monorepo.
 
-### Linux
+## Table of Contents
 
-```shell
-curl https://download.hyper.space/api/install | bash
+- [Install](#install)
+- [Quick Start](#quick-start)
+- [Commands](#commands)
+- [Features](#features)
+- [Platform Support](#platform-support)
+- [GPU Recommendations](#gpu-recommendations)
+- [Configuration](#configuration)
+- [Migrating from v1](#migrating-from-v1)
+- [Troubleshooting](#troubleshooting)
+- [Uninstall](#uninstall)
+- [Links](#links)
+- [Maintainer](#maintainer)
+- [License](#license)
+
+## Install
+
+### Linux / macOS
+
+```bash
+curl -fsSL https://download.hyper.space/api/install | bash
 ```
 
-### Mac
+### Windows (PowerShell as Administrator)
 
-```shell
-curl https://download.hyper.space/api/install | sh
-```
-
-### Windows
-
-You must be running in an Administrator PowerShell for both installation and uninstallation scripts to work on Windows
-
-```shell
-# If you have a real version of `curl` (i.e. something that returns a valid version when you do `curl --version`)
+```powershell
 curl https://download.hyper.space/api/install?platform=windows | powershell -
-# Otherwise
-(Invoke-WebRequest "https://download.hyper.space/install?platform=windows").Content | powershell -
 ```
 
-## Uninstallation
+### What the installer does
 
-Uninstallation is similar but just change the endpoint to `/uninstall`
+- Auto-detects your OS and CPU architecture
+- Downloads the correct pre-built binary
+- Installs to `~/.hyperspace/bin/` and adds it to your `PATH`
+- Installs `llama-server` for native GPU inference (CUDA on Linux/Windows, Metal on macOS)
+- Auto-detects and integrates with existing [Ollama](https://ollama.com) installations
+- On desktop machines, installs the **Hyperspace Tray app** (use `--no-tray` to skip)
 
-### Linux
+The binary is named `hyperspace`. The legacy name `aios-cli` is kept as an alias for backwards compatibility.
 
-```shell
-curl https://download.hyper.space/api/uninstall | bash
+## Quick Start
+
+```bash
+# Start your node (auto-detects hardware and selects the best profile)
+hyperspace start
+
+# Or start with all 9 capabilities enabled
+hyperspace start --profile full
+
+# Start with the management API exposed on a specific port
+hyperspace start --api-port 8080
+
+# Auto-download the best models for your GPU
+hyperspace models pull --auto
+
+# Check your node status, peer count, and points
+hyperspace status
 ```
-
-### Mac
-
-```shell
-curl https://download.hyper.space/api/uninstall | sh
-```
-
-### Windows
-
-```shell
-(Invoke-WebRequest "https://download.hyper.space/uninstall?platform=windows").Content | powershell -
-```
-
-## Docker
-
-There are 2 pre-built docker images available, one on CPU that will install and serves Mistral 7B and one that requires an Nvidia GPU that installs and serves Llama3.
-
-- [`cpu-mistral-7b`](https://hub.docker.com/repository/docker/kartikhyper/aios)
-- [`nvidia-llama-3`](https://hub.docker.com/repository/docker/kartikhyper/aios-nvidia)
-
-Make sure that the environment you run the Nvidia image in has `nvidia-container-toolkit` installed and selected as the default runtime.
-
-## Usage
-
-```
-aios-cli [OPTIONS] <COMMAND>
-```
-
-## Example
-
-Since there's a lot of commands coming up here is a basic example of some common use cases:
-
-```shell
-# Start the actual daemon
-aios-cli start
-
-# See what models are available
-aios-cli models available
-# Install one of them locally
-aios-cli models add hf:TheBloke/Mistral-7B-Instruct-v0.1-GGUF:mistral-7b-instruct-v0.1.Q4_K_S.gguf
-# Run a local inference using it
-aios-cli infer --model hf:TheBloke/Mistral-7B-Instruct-v0.1-GGUF:mistral-7b-instruct-v0.1.Q4_K_S.gguf --prompt "Can you explain how to write an HTTP server in Rust?"
-
-# Import your private key from a .pem or .base58 file
-aios-cli hive import-keys ./my.pem
-# Set those keys as the preferred keys for this session
-aios-cli hive login
-# Connect to the network (now providing inference for the model you installed before)
-aios-cli hive connect
-
-# Run an inference through someone else on the network (as you can see it's the exact same format as the normal `infer` just prefixed with `hive`)
-aios-cli hive infer --model hf:TheBloke/Mistral-7B-Instruct-v0.1-GGUF:mistral-7b-instruct-v0.1.Q4_K_S.gguf --prompt "Can you explain how to write an HTTP server in Rust?"
-
-# There's a shortcut to start and login/connect to immediately start hosting local models as well
-aios-cli start --connect
-```
-
-## Global Options
-
-- `--verbose`: Increases the verbosity of the output. Useful for debugging or getting more detailed information.
-- `-h, --help`: Prints the help message, showing available commands and options.
 
 ## Commands
 
-### `start`
+| Command | Description |
+|---|---|
+| `hyperspace start` | Start the node daemon (background mode, survives terminal close) |
+| `hyperspace stop` | Stop the running node |
+| `hyperspace status` | Show node status, peer count, points balance, and tier |
+| `hyperspace models pull --auto` | Auto-download optimal models based on available VRAM |
+| `hyperspace models downloaded` | List all locally downloaded models |
+| `hyperspace models delete <name>` | Delete a downloaded model |
+| `hyperspace chat` | Interactive AI chat session using local inference |
+| `hyperspace version` | Show the installed version and check for updates |
 
-Starts the local aiOS daemon.
+### Node Profiles
 
-Usage: `aios-cli start`
+When starting a node, you can specify a profile that determines which capabilities are active:
 
-### `status`
-
-Checks the status of your local aiOS daemon, shows you whether it is still running.
-
-Usage: `aios-cli status`
-
-### `kill`
-
-Terminates the currently running local aiOS daemon. This can be useful if you find yourself in a broken state and need a clean way to restart.
-
-Usage: `aios-cli kill`
-
-### `models`
-
-Commands to manage your local models.
-
-Usage: `aios-cli models [OPTIONS] <COMMAND>`
-
-Subcommands:
-
-- `list`: Lists currently downloaded models.
-- `add`: Downloads a new model.
-- `remove`: Removes a downloaded model.
-- `check`: Checks if the given model is valid on disk.
-- `migrate`: Migrates a model from V0 of aiOS to the new location. It is highly unlikely that you would need to use this now.
-- `available`: Lists the models available on the network.
-- `help`: Prints the help message for the models command or its subcommands.
-
-### `system-info`
-
-Shows you your system specifications that are relevant for model inference.
-
-Usage: `aios-cli system-info`
-
-### `infer`
-
-Uses local models to perform inference.
-
-Usage: `aios-cli infer [OPTIONS]`
-
-(Additional options and parameters for inference would be listed here)
-
-### `hive`
-
-Runs commands using the Hive servers. For context Hive is what the Hyperspace hosted servers are referred to as.
-
-Usage: `aios-cli hive [OPTIONS] <COMMAND>`
-
-Subcommands:
-
-- `login`: Login with your keypair credentials.
-- `import-keys`: Import your keys (either ed25519 PEM file or base58 file).
-- `connect`: Connect to the network and provide inference using local models.
-- `whoami`: Get currently signed in keys.
-- `disconnect`: Disconnect from the network.
-- `infer`: Run an inference on the network.
-- `listen`: Listen for all hive events.
-- `select-tier`: Select a tier to start recieving points
-- `allocate`: Allocate the amount of GPU memory you would like to and get automatically put into the best tier for points
-- `interrupt`: Interrupt an inference you are currently doing for the network.
-- `help`: Print the help message for the hive command or its subcommands.
-
-Options:
-
-- `--verbose`: you can run all the commands with this flag to get more info about any errors
-
-### `version`
-
-Prints the current version of the aiOS CLI tool.
-
-Usage: `aios-cli version`
-
-### `help`
-
-Prints the help message or the help of the given subcommand(s).
-
-Usage:
-- `aios-cli help`: Prints general help
-- `aios-cli help [COMMAND]`: Prints help for a specific command
-
-## Points
-
-To get points you need to put into a tier (currently ranging from best to worst as 1-5).
-
-Each tier has some required models that you need to download and register to the network and certain amounts of GPU memory:
-
-- `1` : `30GB`
-- `2` : `20GB`
-- `3` : `8GB`
-- `4` : `4GB`
-- `5` : `2GB`
-
-You can see what models you need by attempting to `hive select-tier` or by running `hive allocate` with the amount of VRAM you want to provide.
-
-Here's a full workflow of using the CLI to start receiving points:
-
-```shell
-# Run this to see what models are required
-aios-cli hive select-tier 5
-# Download a required model
-aios-cli models add hf:TheBloke/phi-2-GGUF:phi-2.Q4_K_M.gguf
-# Make sure it's registered
-aios-cli hive connect
-aios-cli hive select-tier 5
-# To check your current multiplier and points
-aios-cli hive points
+```bash
+hyperspace start                     # Auto-detect best profile
+hyperspace start --profile full      # All capabilities
+hyperspace start --profile inference # GPU inference only
+hyperspace start --profile embedding # CPU-only embedding node
+hyperspace start --profile relay     # Lightweight relay node
 ```
 
-## Updates
+## Features
 
-When you run `start` the CLI will be constantly polling and checking for updates as this software is in an early version and it is likely that there are breaking changes made at the network level that can make your node obsolete. These checks for updates and whether they were successful or not will show up in your logs for troubleshooting if you think something has gone wrong in the process.
+- **Native GPU Inference** -- Full local AI inference via node-llama-cpp with CUDA (NVIDIA) and Metal (Apple Silicon) support
+- **Auto Model Selection** -- Automatically picks the best models for your available VRAM
+- **Ollama Integration** -- Discovers and uses locally installed Ollama models out of the box
+- **Background Daemon** -- Runs as a persistent background process that survives terminal close
+- **Points System** -- Earn points through pulse verification rounds and serving inference to the network
+- **P2P Networking** -- Built on libp2p with GossipSub, Kademlia DHT, and Circuit Relay for NAT traversal
+- **Auto-Update** -- Checks for new versions on startup and applies updates seamlessly
+- **Management API** -- REST and WebSocket API on a configurable port for programmatic control
 
-To ensure that you are on the latest version or update while not in a started state, just run the `version` command while connected to the internet and the CLI will automatically check and update itself. If for some reason that's not working you can re-run the installation steps and the script will install the latest version.
+### Network Capabilities
+
+Each node can provide up to 9 distinct capabilities to the network:
+
+| Capability | Description |
+|---|---|
+| **Inference** | Serve AI model inference requests from peers |
+| **Embedding** | Generate text embeddings (CPU-only, runs on any hardware) |
+| **Storage** | Distributed content-addressed block storage |
+| **Memory** | Distributed vector store with replication |
+| **Relay** | Help peers behind NATs connect via circuit relay |
+| **Validation** | Participate in pulse verification rounds |
+| **Orchestration** | Coordinate multi-step AI task pipelines |
+| **Caching** | Cache inference results to speed up repeated queries |
+| **Proxy** | Provide residential IP proxy service for AI agents |
+
+## Platform Support
+
+Pre-built binaries are available for the following platforms:
+
+| Platform | Binary | Architecture |
+|---|---|---|
+| macOS | `aios-cli-aarch64-apple-darwin.tar.gz` | Apple Silicon (ARM64) |
+| macOS | `aios-cli-x86_64-apple-darwin.tar.gz` | Intel (x86_64) |
+| Linux | `aios-cli-x86_64-unknown-linux-gnu.tar.gz` | x86_64 |
+| Linux | `aios-cli-x86_64-unknown-linux-gnu-cuda.tar.gz` | x86_64 with CUDA |
+| Windows | `aios-cli-x86_64-pc-windows-msvc.zip` | x86_64 |
+| Windows | `aios-cli-x86_64-pc-windows-msvc-cuda.zip` | x86_64 with CUDA |
+
+The CUDA variants include GPU acceleration support for NVIDIA GPUs. On macOS, Metal acceleration for Apple Silicon is included in the standard binary.
+
+## GPU Recommendations
+
+The CLI automatically selects the best model for your hardware. Here is a general guide:
+
+| GPU | VRAM | Recommended Model | Best For |
+|---|---|---|---|
+| GTX 1650 | 4 GB | Gemma 3 1B | General tasks |
+| RTX 3060 / RTX 4060 | 8 GB | Gemma 3 4B | General tasks |
+| RTX 4070 | 12 GB | GLM-4 9B | Multilingual |
+| RTX 4080 | 16 GB | GPT-oss 20B | Reasoning |
+| RTX 4090 / RTX 3090 | 24 GB | Gemma 3 27B | General tasks |
+| A100 / H100 | 40-80 GB | Qwen2.5 Coder 32B | Code generation |
+
+CPU-only nodes can still contribute by running embedding models (all-MiniLM-L6-v2) and acting as relay or storage nodes.
+
+## Configuration
+
+All data is stored under the `~/.hyperspace/` directory:
+
+| Path | Description |
+|---|---|
+| `~/.hyperspace/bin/` | Installed binaries |
+| `~/.hyperspace/config.json` | Node configuration |
+| `~/.hyperspace/logs/` | Log files |
+| `~/.hyperspace/models/` | Downloaded AI models |
+| `~/.hyperspace/identity/` | Persistent peer identity (Ed25519 keypair) |
+
+On Windows, the equivalent base path is `%LOCALAPPDATA%\Hyperspace\`.
+
+## Migrating from v1
+
+If you are running the v1 CLI (`aios-cli`), the upgrade is automatic. Key changes:
+
+| v1 Command | v2 Equivalent |
+|---|---|
+| `aios-cli hive connect` | `hyperspace start` |
+| `aios-cli hive select-tier` | Automatic (based on hardware) |
+| `aios-cli hive points` | `hyperspace status` |
+
+- The binary auto-updates from v1 to v2 on next launch.
+- Your v1 points are **frozen and preserved** -- they will not be lost.
+- The `aios-cli` command name continues to work as an alias.
+- V2 replaces manual tier selection with automatic hardware detection and profile assignment.
 
 ## Troubleshooting
 
-For help with issues please make sure to attach the most recent few log files. These can be found at:
+### Node not starting
 
-- `linux`: `~/.cache/hyperspace/kernel-logs`
-- `mac`: `~/Library/Caches/hyperspace/kernel-logs`
-- `windows`: `%LOCALAPPDATA%\Hyperspace\kernel-logs`
+1. Check the logs for errors:
+   ```bash
+   # Linux / macOS
+   cat ~/.hyperspace/logs/hyperspace.log
 
-## Support
+   # Windows
+   type %LOCALAPPDATA%\Hyperspace\logs\hyperspace.log
+   ```
 
-Feel free to open an issue here in the GitHub if you run into any issues or think the documentation can be improved.
+2. Ensure no other instance is already running:
+   ```bash
+   hyperspace status
+   ```
+
+3. If the port is in use, specify a different API port:
+   ```bash
+   hyperspace start --api-port 9090
+   ```
+
+### No GPU detected
+
+- **NVIDIA**: Ensure CUDA drivers are installed and `nvidia-smi` works. Use the `-cuda` binary variant.
+- **Apple Silicon**: Metal support is built-in. Ensure you are using the `aarch64-apple-darwin` binary.
+- **CPU-only**: The node will fall back to CPU inference with smaller models and can still earn points via relay, embedding, and validation.
+
+### Models not downloading
+
+- Check available disk space (models range from 1-20 GB).
+- Downloads support resume -- if interrupted, re-run `hyperspace models pull --auto` to continue.
+
+### Connection issues
+
+- The node needs outbound internet access on TCP port 4002 (WebSocket) for P2P connections.
+- Nodes behind NAT are supported via circuit relay -- no port forwarding required.
+
+## Uninstall
+
+### Linux / macOS
+
+```bash
+curl https://download.hyper.space/api/uninstall | bash
+```
+
+### Windows (PowerShell)
+
+```powershell
+(Invoke-WebRequest "https://download.hyper.space/uninstall?platform=windows").Content | powershell -
+```
+
+This removes the binary, tray app, and configuration. Downloaded models in `~/.hyperspace/models/` are preserved by default.
+
+## Links
+
+- **Website**: [https://hyper.space](https://hyper.space)
+- **Dashboard**: [https://p2p.hyper.space](https://p2p.hyper.space)
+- **Twitter/X**: [@HyperspaceAI](https://x.com/HyperspaceAI)
+
+## Maintainer
+
+Varun ([@twobitapps](https://github.com/twobitapps))
+
+For project updates, follow [@HyperspaceAI](https://x.com/HyperspaceAI) on X.
+
+## License
+
+See [LICENSE](LICENSE) for details.
